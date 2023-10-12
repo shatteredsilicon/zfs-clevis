@@ -15,5 +15,5 @@ do
 			echo "FAILED TO UNLOCK ${ds}"
 		fi
 	fi
-done 3< <(zfs list -H -o name,encryption,zfs-tpm:key)
+done 3< <(zfs list -H -o name,encryption,zfs-clevis:key)
 ) 1>&2
