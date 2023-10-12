@@ -17,20 +17,20 @@ Requires:          dracut, clevis
 A Dracut module to unlock zfs datasets with clevis during boot
 
 %prep
-setup -q
+%setup -q
 
 %build
 echo "Nothing to build"
 
 %install
-%{__install} -d %{dracutmodule}
-%{__install} -m 0744 module-setup.sh %{dracutmodule}
-%{__install} -m 0744 fetch-keys.sh %{dracutmodule}
+%{__install} -d -m 0755 %{buildroot}/%{dracutmodule}
+%{__install} -m 0744 module-setup.sh %{buildroot}/%{dracutmodule}
+%{__install} -m 0744 fetch-keys.sh %{buildroot}/%{dracutmodule}
 
 %files
 %dir %{dracutmodule}
-%dir %{dracutmodule}/module-setup.sh
-%dir %{dracutmodule}/fetch-keys.sh
+%{dracutmodule}/module-setup.sh
+%{dracutmodule}/fetch-keys.sh
 
 %changelog
 * Thu Oct 12 2023 Niall Daley <niall@shatteredsilicon.net> - 1.0-1
