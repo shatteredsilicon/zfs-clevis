@@ -26,7 +26,7 @@ echo "Nothing to build"
 %{__install} -d -m 0755 %{buildroot}/%{dracutmodule}
 %{__install} -m 0744 module-setup.sh %{buildroot}/%{dracutmodule}
 %{__install} -m 0744 fetch-keys.sh %{buildroot}/%{dracutmodule}
-%{__install} -m 0644 zfs-clevis.conf %{buildroot}/etc/dracut.conf.d/
+%{__install} -Dm 0644 zfs-clevis.conf %{buildroot}/etc/dracut.conf.d/
 
 %files
 %dir %{dracutmodule}
