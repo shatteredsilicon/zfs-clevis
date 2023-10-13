@@ -58,12 +58,24 @@ jobs:
         run: |
           echo "RPM_PACKAGE_PATH=$(readlink -f $(ls zfs-clevis-*.rpm | head -n 1))" >> $GITHUB_ENV
 
-      - name: Create release
+      - name: Create draft release
         uses: ncipollo/release-action@v1
         with:
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: true
+          prerelease: false
+          artifacts: "${{ env.RPM_PACKAGE_PATH }}"
+
+      # This dance is necessary as github triggers the release webhook before the artifacts are uploaded
+      # Creating a draft first means the artifacts are in place before the publish event is triggered
+      # https://stackoverflow.com/questions/37437581/listening-to-release-asset-changes-with-github-webhooks
+      - name: Create published release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
           tag: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
           artifacts: "${{ env.RPM_PACKAGE_PATH }}"
-
