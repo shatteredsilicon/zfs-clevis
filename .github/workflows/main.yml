@@ -1,0 +1,69 @@
+name: CICD
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v[0-9]+.*'
+
+jobs:
+  rpm-build:
+    runs-on: ubuntu-latest
+    container: rockylinux:9
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install prerequisite software
+        run: |
+          yum -y install tar yum-utils rpmdevtools
+
+      - name: Prepare rpmbuild directory
+        run: mkdir -p ~/rpmbuild/SOURCES
+
+      - name: Replace package version
+        run: |
+          release_version="${{ github.ref_name }}"
+          sed -i "s/%{version}/${release_version#v}/g" zfs-clevis.spec
+
+      - name: Prepare rpmbuild tarball
+        run: |
+          release_version="${{ github.ref_name }}"
+          tar -czf ~/rpmbuild/SOURCES/zfs-clevis-${release_version#v}.tar.gz -C $(dirname $(pwd)) --transform "s/zfs-clevis/zfs-clevis-${backoid_version#v}/" zfs-clevis
+
+      - name: Build rpm package
+        run:  |
+          rpmbuild -bb zfs-clevis.spec
+          echo "RPM_PACKAGE_PATH=$(readlink -f $(ls ~/rpmbuild/RPMS/*/zfs-clevis-*.rpm | head -n 1))" >> $GITHUB_ENV
+
+      - name: Upload rpm artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: zfs-clevis-rpm-artifact
+          path: ${{ env.RPM_PACKAGE_PATH }}
+
+  publish-release:
+    needs: rpm-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download rpm artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: zfs-clevis-rpm-artifact
+
+      - name: Prepare environment variables
+        run: |
+          echo "RPM_PACKAGE_PATH=$(readlink -f $(ls zfs-clevis-*.rpm | head -n 1))" >> $GITHUB_ENV
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          artifacts: "${{ env.RPM_PACKAGE_PATH }}"
+
