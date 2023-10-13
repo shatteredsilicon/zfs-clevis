@@ -29,7 +29,7 @@ jobs:
       - name: Prepare rpmbuild tarball
         run: |
           release_version="${{ github.ref_name }}"
-          tar -czf ~/rpmbuild/SOURCES/zfs-clevis-${release_version#v}.tar.gz -C $(dirname $(pwd)) --transform "s/zfs-clevis/zfs-clevis-${backoid_version#v}/" zfs-clevis
+          tar -czf ~/rpmbuild/SOURCES/zfs-clevis-${release_version#v}.tar.gz -C $(dirname $(pwd)) --transform "s/zfs-clevis/zfs-clevis-${release_version#v}/" zfs-clevis
 
       - name: Build rpm package
         run:  |
