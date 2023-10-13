@@ -33,14 +33,21 @@ jobs:
 
       - name: Build rpm package
         run:  |
-          rpmbuild -bb zfs-clevis.spec
+          rpmbuild -ba zfs-clevis.spec
           echo "RPM_PACKAGE_PATH=$(readlink -f $(ls ~/rpmbuild/RPMS/*/zfs-clevis-*.rpm | head -n 1))" >> $GITHUB_ENV
+          echo "SRPM_PACKAGE_PATH=$(readlink -f $(ls ~/rpmbuild/SRPMS/zfs-clevis-*.src.rpm | head -n 1))" >> $GITHUB_ENV
 
       - name: Upload rpm artifact
         uses: actions/upload-artifact@v3
         with:
           name: zfs-clevis-rpm-artifact
           path: ${{ env.RPM_PACKAGE_PATH }}
+
+      - name: Upload srpm artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: zfs-clevis-srpm-artifact
+          path: ${{ env.SRPM_PACKAGE_PATH }}
 
   publish-release:
     needs: rpm-build
@@ -54,9 +61,15 @@ jobs:
         with:
           name: zfs-clevis-rpm-artifact
 
+      - name: Download srpm artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: zfs-clevis-srpm-artifact
+
       - name: Prepare environment variables
         run: |
-          echo "RPM_PACKAGE_PATH=$(readlink -f $(ls zfs-clevis-*.rpm | head -n 1))" >> $GITHUB_ENV
+          echo "RPM_PACKAGE_PATH=$(readlink -f $(ls zfs-clevis-*.rpm | grep -v '\.src\.' | head -n 1))" >> $GITHUB_ENV
+          echo "SRPM_PACKAGE_PATH=$(readlink -f $(ls zfs-clevis-*.src.rpm | head -n 1))" >> $GITHUB_ENV
 
       - name: Create draft release
         uses: ncipollo/release-action@v1
@@ -65,7 +78,7 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: true
           prerelease: false
-          artifacts: "${{ env.RPM_PACKAGE_PATH }}"
+          artifacts: "${{ env.RPM_PACKAGE_PATH }},${{ env.SRPM_PACKAGE_PATH }}"
 
       # This dance is necessary as github triggers the release webhook before the artifacts are uploaded
       # Creating a draft first means the artifacts are in place before the publish event is triggered
@@ -78,4 +91,4 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-          artifacts: "${{ env.RPM_PACKAGE_PATH }}"
+          artifacts: "${{ env.RPM_PACKAGE_PATH }},${{ env.SRPM_PACKAGE_PATH }}"
