@@ -5,7 +5,6 @@ check() {
 }
 
 depends() {
-	echo zfs
 	return 0
 }
 
