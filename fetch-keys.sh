@@ -6,20 +6,23 @@ command -v clevis > /dev/null || exit -1
 
 echo "##### Unlocking ZFS encrypted volumes"
 
-while read -u 3 ds enc keystatus key
+while read -u 3 ds enc keystatus encroot key
 do
-	if [ "${enc}" != "off" -a "${key}" != "-" ]
+	if [ "${ds}" = "${encroot}" ]
 	then
-		if [ "${keystatus}" = "available" ]
+		if [ "${enc}" != "off" -a "${key}" != "-" ]
 		then
-			echo "Dataset ${ds} already unlocked"
-		else
-			echo "Loading key for ${ds}"
-			if (echo -n "${key}" | clevis decrypt | zfs load-key -L prompt "${ds}")
+			if [ "${keystatus}" = "available" ]
 			then
-				echo "Dataset ${ds} unlocked"
+				echo "Dataset ${ds} already unlocked"
 			else
-				echo "FAILED TO UNLOCK ${ds}"
+				echo "Loading key for ${ds}"
+				if (echo -n "${key}" | clevis decrypt | zfs load-key -L prompt "${ds}")
+				then
+					echo "Dataset ${ds} unlocked"
+				else
+					echo "FAILED TO UNLOCK ${ds}"
+				fi
 			fi
 		fi
 	fi
