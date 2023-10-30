@@ -14,4 +14,5 @@ install() {
 
 	# Install our hook before the standard ZFS one to unlock what we can
 	inst_hook pre-mount 85 "${moddir}/fetch-keys.sh"
+	inst_simple "${moddir}/fetch-keys.sh" "/sbin/fetch-keys.sh"
 }

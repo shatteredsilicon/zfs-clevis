@@ -26,5 +26,6 @@ do
 			fi
 		fi
 	fi
-done 3< <(zfs list -H -o name,encryption,keystatus,zfs-clevis:key)
+	# Do not quote ${1} in the zfs list, it needs to not be expanded if not supplied
+done 3< <(zfs list -H -o name,encryption,keystatus,encryptionroot,zfs-clevis:key ${1})
 ) 1>&2
