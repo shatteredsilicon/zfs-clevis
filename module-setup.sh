@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 
 check() {
-	return 0
+	# Require module to be explicitly included
+	return 255
 }
 
 depends() {
